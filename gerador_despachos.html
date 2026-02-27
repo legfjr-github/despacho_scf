@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Despachos - PROGEPE UFPE</title>
+    <style>
+        :root {
+            --ufpe-blue: #003b71;
+            --ufpe-red: #780C18;
+            --ufpe-light-blue: #f0f4f8;
+            --text-dark: #333;
+            --white: #ffffff;
+            --gray-light: #f4f6f9;
+            --gray-border: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 4px solid var(--ufpe-red);
+        }
+
+        .card-logo {
+            width: 50px;
+            height: auto;
+            margin-right: 15px;
+        }
+
+        .header-text h1 {
+            color: #555;
+            font-size: 1.2rem;
+            margin: 0;
+            font-weight: 800;
+        }
+
+        .header-text h2 {
+            font-size: 1rem;
+            margin: 0;
+            font-weight: 600;
+            color: var(--ufpe-red);
+        }
+
+        .banner {
+            background-color: var(--ufpe-red);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--ufpe-blue);
+            font-size: 0.9rem;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--gray-border);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--ufpe-blue);
+            box-shadow: 0 0 0 2px rgba(0, 59, 113, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: var(--gray-light);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        /* Preview Area */
+        .preview-container {
+            position: sticky;
+            top: 20px;
+        }
+
+        .preview-header {
+            background-color: var(--ufpe-blue);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #preview-content {
+            background: white;
+            padding: 20px;
+            border: 1px solid var(--gray-border);
+            min-height: 400px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .btn-copy {
+            background-color: var(--ufpe-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-copy:hover {
+            background-color: #002a52;
+        }
+
+        .btn-copy:active {
+            transform: scale(0.98);
+        }
+
+        .dynamic-field {
+            display: none;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Output Formatting */
+        .preview-text b {
+            font-weight: bold;
+        }
+
+        .preview-text i {
+            font-style: italic;
+        }
+
+        .preview-text blockquote {
+            border-left: 4px solid var(--gray-border);
+            margin: 10px 0;
+            padding-left: 15px;
+            font-style: italic;
+            color: #444;
+        }
+
+        .footer-strip {
+            background-color: var(--ufpe-blue);
+            color: white;
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- SEÇÃO DE CONFIGURAÇÃO -->
+        <div class="card">
+            <div class="card-header">
+                <img src="UFPELOGO.png" alt="Logo UFPE" class="card-logo">
+                <div class="header-text">
+                    <h1>UFPE</h1>
+                    <h2>PROGEPE</h2>
+                </div>
+            </div>
+            <div class="banner">Configuração do Despacho</div>
+            <div class="content">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="check-setor" onchange="toggleConfig('setor')">
+                    <label for="check-setor" style="margin:0">Mencionar Setor de Destino</label>
+                </div>
+                <div id="field-setor" class="form-group dynamic-field">
+                    <label for="input-setor">Nome do Setor / Unidade:</label>
+                    <input type="text" id="input-setor" placeholder="Ex: Seção de Arquivo de Pessoal (11.07.22)"
+                        oninput="updatePreview()">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="check-servidor" onchange="toggleConfig('servidor')">
+                    <label for="check-servidor" style="margin:0">Mencionar Servidor (Nome/SIAPE)</label>
+                </div>
+                <div id="field-servidor" class="form-group dynamic-field">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label for="input-nome">Nome do Servidor:</label>
+                            <input type="text" id="input-nome" placeholder="Nome Completo" oninput="updatePreview()">
+                        </div>
+                        <div>
+                            <label for="input-siape">SIAPE:</label>
+                            <input type="text" id="input-siape" placeholder="0000000" oninput="updatePreview()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="select-assunto">Assunto / Tipo de Despacho:</label>
+                    <select id="select-assunto" onchange="handleAssuntoChange()">
+                        <option value="">Selecione um assunto...</option>
+                        <option value="ferias_pos_inicio">Férias - Alteração após início (Interrupção)</option>
+                        <option value="ferias_concluido">Férias - Pedido Atendido (Ciência)</option>
+                        <option value="ferias_necessidade">Férias - Necessidade do Serviço (Interrupção Novo)</option>
+                        <option value="ferias_excepcional">Férias - Inclusão Excepcional</option>
+                        <option value="ferias_interrupcao_simples">Férias - Regras de Interrupção</option>
+                        <option value="ferias_ordem">Férias - Ordem Cronológica de Exercícios</option>
+                        <option value="ferias_dias">Férias - Divergência na Soma de Dias</option>
+                        <option value="ferias_sougov">Férias - Orientação SouGov</option>
+                        <option value="ferias_oficio">Férias - Solicitação de Ofício</option>
+                    </select>
+                </div>
+
+                <!-- Campos Dinâmicos baseados no Assunto -->
+                <div id="dynamic-inputs">
+                    <div id="group-exercicio" class="form-group dynamic-field">
+                        <label for="input-exercicio">Exercício (Ano):</label>
+                        <input type="text" id="input-exercicio" placeholder="2024" oninput="updatePreview()">
+                    </div>
+
+                    <div id="group-datas-orig" class="form-group dynamic-field">
+                        <label>Programação Original:</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input type="text" id="input-data-ini-orig" placeholder="DDMMYYYY" maxlength="10"
+                                oninput="maskDate(this); updatePreview()">
+                            <input type="text" id="input-data-fim-orig" placeholder="DDMMYYYY" maxlength="10"
+                                oninput="maskDate(this); updatePreview()">
+                        </div>
+                        <input type="number" id="input-dias-orig" placeholder="Nº de dias" style="margin-top:5px"
+                            oninput="updatePreview()">
+                    </div>
+
+                    <div id="group-datas-novas" class="form-group dynamic-field">
+                        <label>Nova Programação / Saldo:</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input type="text" id="input-data-ini-nova" placeholder="DDMMYYYY" maxlength="10"
+                                oninput="maskDate(this); updatePreview()">
+                            <input type="text" id="input-data-fim-nova" placeholder="DDMMYYYY" maxlength="10"
+                                oninput="maskDate(this); updatePreview()">
+                        </div>
+                        <input type="number" id="input-dias-novos" placeholder="Nº de dias" style="margin-top:5px"
+                            oninput="updatePreview()">
+                    </div>
+
+                    <div id="group-retorno" class="form-group dynamic-field">
+                        <label for="input-retorno">Data do Retorno (Interrupção):</label>
+                        <input type="text" id="input-retorno" placeholder="DDMMYYYY" maxlength="10"
+                            oninput="maskDate(this); updatePreview()">
+                    </div>
+
+                    <div id="group-motivo" class="form-group dynamic-field">
+                        <label for="input-motivo">Motivo / Razão:</label>
+                        <textarea id="input-motivo" rows="2"
+                            placeholder="Ex: necessidade do serviço para fechamento de folha"
+                            oninput="updatePreview()"></textarea>
+                    </div>
+
+                    <div id="group-doc-ref" class="form-group dynamic-field">
+                        <label for="input-doc-ref">Documento de Referência (Nº):</label>
+                        <input type="text" id="input-doc-ref" placeholder="Doc. XXXXX" oninput="updatePreview()">
+                    </div>
+                </div>
+            </div>
+            <div class="footer-strip">SISTEMA GERADOR DE DESPACHOS - PROGEPE</div>
+        </div>
+
+        <!-- SEÇÃO DE PREVIEW -->
+        <div class="preview-container">
+            <div class="card">
+                <div class="preview-header">PRÉ-VISUALIZAÇÃO DO DESPACHO</div>
+                <div id="preview-content">O despacho aparecerá aqui...</div>
+                <button class="btn-copy" onclick="copyToClipboard()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
+                    COPIAR TEXTO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const templates = {
+            ferias_pos_inicio: {
+                text: "Informamos <b>não ser possível atender a solicitação</b>, visto que os pedidos de alteração de férias devem ser realizados em data anterior ao início do gozo.\n\nCaso seja necessidade do serviço poderá ser solicitado a <i>interrupção de férias</i> devendo manter pelo menos <b>1 (um) dia</b> da programação original (por exemplo, se a programação original é de 01/09/24 a 10/09/24 (10 dias), precisará interromper no mínimo em 02/09, mantendo o primeiro dia e reprogramando <b>{dias_novos} dias</b> restantes, que serão gozadas de uma vez).\n\nA solicitação deve estar <b>assinada pela autoridade máxima</b>, sendo a diretoria do centro, pró-reitoria ou superintendência responsável e os dias resultantes da interrupção são uma nova parcela não podendo ser incorporados em outra parcela.",
+                model: "<blockquote><b>Solicito interrupção de férias</b> do servidor <u>{nome}</u>, SIAPE <u>{siape}</u>, referentes ao exercício <b>{exercicio}</b>, em razão de {motivo}.\n\nA programação original é:\n2a PARCELA: {data_ini_orig} A {data_fim_orig} ({dias_orig} DIAS)\n\nA interrupção se dará a partir do dia <b>{data_retorno}</b> e os dias restantes deverão ser programados para:\n{data_ini_nova} A {data_fim_nova} ({dias_novos} DIAS).</blockquote>",
+                legal: "<b>Instrução Normativa nº 003/2025-PROGEPE</b>:\n<blockquote><b>Art. 12</b> - A interrupção de férias ocorre quando o servidor, no interesse da Administração, é convocado para retornar ao expediente durante o gozo da parcela de férias (...) por necessidade do serviço declarada pelo dirigente de UORG.\n<b>§ 2º</b> - O período de férias não usufruído pelo servidor em razão da interrupção, deverá ser gozado de uma única vez, sem possibilidade de nova interrupção ou parcelamento.</blockquote>"
+            },
+            ferias_concluido: {
+                text: "Para ciência do(a) interessado(a) de que o pedido de <b>alteração de férias foi atendido</b>.\n\nInformamos que a alteração das férias no SIGRH é feita através de carga de informação nas terças, pedimos que aguarde a sincronização.\n\nNotificamos que no BO 146 de 19/08/2025 foi publicada a <b>INSTRUÇÃO NORMATIVA N° 003</b> sobre FÉRIAS, recomendamos a leitura atenta das regras e procedimentos.",
+                legal: ""
+            },
+            ferias_necessidade: {
+                text: "Informamos <b>não ser possível atender à solicitação de alteração de férias</b>, visto que, conforme o Art. 11 e seu parágrafo único da <b>IN nº 003/2025</b>, os pedidos devem ser realizados em data anterior ao início do gozo e respeitando o cronograma da folha de pagamentos.\n\nA situação reportada deve ser tratada como <i>interrupção de férias por necessidade do serviço</i>, conforme o Art. 12 da mesma normativa.\n\nPara que a interrupção seja processada corretamente, devem ser observadas as seguintes orientações:\n1. <b>Manutenção do Primeiro Dia</b>: É obrigatório que o(a) servidor(a) usufrua de, no mínimo, o primeiro dia de suas férias.\n2. <b>Saldo de Férias</b>: O período restante deverá ser gozado de uma só vez, em parcela única (§ 2º do Art. 12).\n3. <b>Formalização</b>: A solicitação deve ser feita por meio de Ofício numerado, assinado pela autoridade máxima.",
+                model: "<blockquote><b>Solicito a interrupção de férias</b> do(a) servidor(a) <u>{nome}</u>, SIAPE <u>{siape}</u>, referentes ao exercício <b>{exercicio}</b>, em razão de necessidade do serviço.\n\nProgramação Original:\nPARCELA: {data_ini_orig} a {data_fim_orig} ({dias_orig} dias)\n\nA interrupção se dará a partir do dia <b>{data_retorno}</b>.\n\nOs {dias_novos} dias restantes deverão ser reprogramados para o período de:\nSALDO: {data_ini_nova} a {data_fim_nova} ({dias_novos} dias).</blockquote>",
+                legal: "<b>Instrução Normativa nº 003/2025-PROGEPE</b>:\n<blockquote><b>Art. 11</b> - Alteração de férias é a modificação de parcela de férias anteriormente programada, sendo possível antecipar ou postergar.\n<b>Parágrafo único</b> - A solicitação deve ser realizada pelo servidor e homologada pela chefia imediata, respeitado o cronograma de folha de pagamentos...\n<b>Art. 12</b> - A interrupção de férias ocorre quando o servidor, no interesse da Administração, é convocado para retornar ao expediente (...)\n<b>§ 2º</b> - O período de férias não usufruído pelo servidor em razão da interrupção, deverá ser gozado de uma única vez, sem possibilidade de nova interrupção ou parcelamento.</blockquote>"
+            },
+            ferias_excepcional: {
+                text: "Para ciência do(a) interessado(a) de que o pedido de <b>inclusão de férias foi atendido</b>, conforme documento {doc_ref}, em <i>caráter excepcional</i>, uma vez que as férias devem ser solicitadas pelo servidor através do SOUGOV, com antecedência, e posteriormente a chefia imediata deve homologar.\n\nEsclarecemos que esta seção apenas realiza alterações de férias no <b>mês atual de pagamento</b>.",
+                legal: "<b>Instrução Normativa nº 003/2025-PROGEPE</b>:\n<blockquote><b>Art. 8o</b> - O servidor deverá programar as férias por meio plataforma SOUGOV.BR ou sistema eletrônico adotado pela Instituição quando da ocasião. (...) \n<b>§ 2o</b> - Ao servidor é permitido o gozo de férias apenas após a homologação pela chefia imediata por meio da plataforma SOUGOV.BR.</blockquote>"
+            },
+            ferias_interrupcao_simples: {
+                text: "Informamos que a interrupção de férias deve manter pelo menos <b>1 (um) dia</b> da programação original. É necessário que o pedido seja feito através de <b>ofício numerado</b>, informar a data da interrupção das férias (dia que o servidor volta ao trabalho) e o restante dos dias deve ser usufruído de uma única vez.\n\nA solicitação deve estar <b>assinada pela autoridade máxima</b> (Direção do Centro, Pró-Reitoria ou Superintendência).",
+                legal: "<b>Instrução Normativa nº 003/2025-PROGEPE</b>:\n<blockquote><b>Art. 12, § 2º</b> - O período de férias não usufruído pelo servidor em razão da interrupção, deverá ser gozado de uma única vez, sem possibilidade de nova interrupção ou parcelamento.</blockquote>"
+            },
+            ferias_ordem: {
+                text: "Informamos que <b>não é possível programar ou alterar férias</b> de um exercício para datas que coincidam ou ocorram após parcelas já previstas para o exercício seguinte. Cada exercício deve respeitar sua <b>ordem cronológica</b>, e as parcelas não podem se sobrepor.\n\nPara dar prosseguimento, solicitamos que seja ajustada a programação:\n1. Reprogramar as parcelas do exercício atual para datas anteriores ao exercício seguinte; ou\n2. Alterar as parcelas do exercício seguinte via SouGov.",
+                legal: "<b>Instrução Normativa nº 003/2025-PROGEPE</b>:\n<blockquote><b>Art. 10</b> - Somente após o gozo das férias relativas ao exercício anterior será possível o usufruto de novo exercício de férias.</blockquote>\n<b>Orientação Normativa SRH Nº 2/2011</b>:\n<blockquote><b>Art. 3º</b> - As férias correspondentes a cada exercício, integrais ou a última etapa, no caso de parcelamento, devem ter início até o dia 31 de dezembro.</blockquote>"
+            },
+            ferias_dias: {
+                text: "Informamos que, para análise da solicitação de alteração de férias, é necessário que o pedido contenha a <b>programação original completa</b> e a nova programação pretendida.\n\nRessaltamos que a <b>soma dos dias originalmente programados deve ser exatamente igual à soma dos dias pretendidos</b>, uma vez que não podem existir dias de férias sem programação.",
+                legal: ""
+            },
+            ferias_sougov: {
+                text: "Informamos que as alterações de férias devem ser solicitadas pelo interessado no <b>SOUGOV</b> e posteriormente a chefia imediata deve homologar.\n\nEsclarecemos que esta seção apenas realiza alterações de férias no mês atual de pagamento. Lembramos que o SOUGOV é a ferramenta oficial desde o segundo semestre de 2022.",
+                legal: "<b>Instrução Normativa nº 003/2025-PROGEPE</b>:\n<blockquote><b>Art. 8o</b> - O servidor deverá programar as férias por meio plataforma SOUGOV.BR (...)\n<b>§ 2o</b> - Ao servidor é permitido o gozo de férias apenas após a homologação pela chefia imediata por meio da plataforma SOUGOV.BR.</blockquote>"
+            },
+            ferias_oficio: {
+                text: "Informamos que é necessário que o pedido seja feito através de <b>ofício numerado</b>, enviado por processo à SCF (11.07.24), assinado pela chefia imediata, para que possamos realizar a alteração no sistema.",
+                model: "<blockquote><b>Solicito alteração de férias</b> do servidor <u>{nome}</u>, SIAPE <u>{siape}</u>, referentes ao exercício <b>{exercicio}</b>, em razão de {motivo}.\n\nA programação original é:\n{data_ini_orig} A {data_fim_orig} ({dias_orig} DIAS)\n\nDeve ser modificada para:\n{data_ini_nova} A {data_fim_nova} ({dias_novos} DIAS).</blockquote>",
+                legal: ""
+            }
+        };
+
+        function toggleConfig(type) {
+            const field = document.getElementById(`field-${type}`);
+            const check = document.getElementById(`check-${type}`);
+            field.style.display = check.checked ? 'block' : 'none';
+            updatePreview();
+        }
+
+        function handleAssuntoChange() {
+            const assunto = document.getElementById('select-assunto').value;
+            const dynamicContainer = document.getElementById('dynamic-inputs');
+
+            // Reset all dynamic fields
+            document.querySelectorAll('#dynamic-inputs .dynamic-field').forEach(f => f.style.display = 'none');
+
+            if (!assunto) {
+                updatePreview();
+                return;
+            }
+
+            // Show specific fields based on assunto
+            showField('group-exercicio');
+
+            if (assunto === 'ferias_pos_inicio' || assunto === 'ferias_necessidade' || assunto === 'ferias_oficio') {
+                showField('group-datas-orig');
+                showField('group-datas-novas');
+                showField('group-motivo');
+                if (assunto !== 'ferias_oficio') showField('group-retorno');
+            }
+
+            if (assunto === 'ferias_excepcional') {
+                showField('group-doc-ref');
+            }
+
+            updatePreview();
+        }
+
+        function showField(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function maskDate(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.length > 8) value = value.slice(0, 8);
+            if (value.length >= 5) {
+                value = value.replace(/^(\d{2})(\d{2})(\d{1,4})$/, '$1/$2/$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/^(\d{2})(\d{1,2})$/, '$1/$2');
+            }
+            input.value = value;
+        }
+
+        function calculateDays(startStr, endStr) {
+            if (!/^\d{2}\/\d{2}\/\d{4}$/.test(startStr) || !/^\d{2}\/\d{2}\/\d{4}$/.test(endStr)) return null;
+            const [d1, m1, y1] = startStr.split('/').map(Number);
+            const [d2, m2, y2] = endStr.split('/').map(Number);
+            const startDate = new Date(y1, m1 - 1, d1);
+            const endDate = new Date(y2, m2 - 1, d2);
+            if (isNaN(startDate) || isNaN(endDate)) return null;
+            const diffTime = endDate - startDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            return diffDays > 0 ? diffDays : null;
+        }
+
+        function updatePreview() {
+            const assunto = document.getElementById('select-assunto').value;
+            const preview = document.getElementById('preview-content');
+
+            if (!assunto) {
+                preview.innerHTML = "Selecione um assunto para gerar o despacho...";
+                return;
+            }
+
+            // Auto-calculate days
+            const ini_orig = document.getElementById('input-data-ini-orig').value;
+            const fim_orig = document.getElementById('input-data-fim-orig').value;
+            const calc_orig = calculateDays(ini_orig, fim_orig);
+            if (calc_orig !== null) document.getElementById('input-dias-orig').value = calc_orig;
+
+            const ini_nova = document.getElementById('input-data-ini-nova').value;
+            const fim_nova = document.getElementById('input-data-fim-nova').value;
+            const calc_nova = calculateDays(ini_nova, fim_nova);
+            if (calc_nova !== null) document.getElementById('input-dias-novos').value = calc_nova;
+
+            const data = {
+                setor: document.getElementById('input-setor').value || "[SETOR]",
+                nome: document.getElementById('input-nome').value || "[NOME DO SERVIDOR]",
+                siape: document.getElementById('input-siape').value || "[SIAPE]",
+                exercicio: document.getElementById('input-exercicio').value || "20XX",
+                data_ini_orig: document.getElementById('input-data-ini-orig').value || "XX/XX/XXXX",
+                data_fim_orig: document.getElementById('input-data-fim-orig').value || "XX/XX/XXXX",
+                dias_orig: document.getElementById('input-dias-orig').value || "XX",
+                data_ini_nova: document.getElementById('input-data-ini-nova').value || "XX/XX/XXXX",
+                data_fim_nova: document.getElementById('input-data-fim-nova').value || "XX/XX/XXXX",
+                dias_novos: document.getElementById('input-dias-novos').value || "XX",
+                data_retorno: document.getElementById('input-retorno').value || "XX/XX/XXXX",
+                motivo: document.getElementById('input-motivo').value || "[MOTIVO]",
+                doc_ref: document.getElementById('input-doc-ref').value || "XX"
+            };
+
+            const template = templates[assunto];
+            let content = "";
+
+            // 1. Cabeçalho opcional
+            if (document.getElementById('check-setor').checked) {
+                content += `À(o) <b>${data.setor}</b><br><br>`;
+            }
+
+            // 2. Texto principal
+            let mainText = template.text;
+            content += mainText.replace(/{(\w+)}/g, (match, key) => data[key] || match).replace(/\n/g, "<br>") + "<br><br>";
+
+            // 3. Modelo de Ofício se houver
+            if (template.model) {
+                content += "<b>MODELO DE OFÍCIO:</b><br>";
+                content += template.model.replace(/{(\w+)}/g, (match, key) => data[key] || match).replace(/\n/g, "<br>") + "<br>";
+            }
+
+            // 4. Fechamento padrão
+            content += "Após regularização da pendência, devolver o processo à SCF para providências.<br><br>";
+            content += "Atenciosamente,<br><br>";
+
+            // 5. Fundamentação Legal (Condicional)
+            if (template.legal) {
+                content += "<u>Fundamentação Legal:</u><br>";
+                content += template.legal.replace(/\n/g, "<br>") + "<br>";
+            }
+
+            preview.innerHTML = content;
+        }
+
+        async function copyToClipboard() {
+            const ini_orig = document.getElementById('input-data-ini-orig').value;
+            const fim_orig = document.getElementById('input-data-fim-orig').value;
+            const ini_nova = document.getElementById('input-data-ini-nova').value;
+            const fim_nova = document.getElementById('input-data-fim-nova').value;
+
+            const dias_orig = parseInt(document.getElementById('input-dias-orig').value) || 0;
+            const dias_novos = parseInt(document.getElementById('input-dias-novos').value) || 0;
+            const assunto = document.getElementById('select-assunto').value;
+
+            if ((assunto === 'ferias_pos_inicio' || assunto === 'ferias_necessidade' || assunto === 'ferias_oficio') && dias_orig !== dias_novos && dias_orig > 0 && dias_novos > 0) {
+                if (!confirm(`Atenção: O total de dias original (${dias_orig}) é diferente do pretendido (${dias_novos}). Deseja prosseguir?`)) {
+                    return;
+                }
+            }
+
+            const text = document.getElementById('preview-content').innerText;
+            try {
+                await navigator.clipboard.writeText(text);
+                const btn = document.querySelector('.btn-copy');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "COPIADO!";
+                btn.style.backgroundColor = "#28a745";
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.backgroundColor = "var(--ufpe-blue)";
+                }, 2000);
+            } catch (err) {
+                alert('Erro ao copiar: ' + err);
+            }
+        }
+
+        // Inicializar
+        updatePreview();
+    </script>
+</body>
+
+</html>
