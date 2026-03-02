@@ -465,6 +465,17 @@
             return diffDays > 0 ? diffDays : null;
         }
 
+        function calculateEndDate(startDateStr, days) {
+            if (!/^\d{2}\/\d{2}\/\d{4}$/.test(startDateStr) || !days) return null;
+            const [d, m, y] = startDateStr.split('/').map(Number);
+            const date = new Date(y, m - 1, d);
+            date.setDate(date.getDate() + parseInt(days) - 1);
+            const d2 = String(date.getDate()).padStart(2, '0');
+            const m2 = String(date.getMonth() + 1).padStart(2, '0');
+            const y2 = date.getFullYear();
+            return `${d2}/${m2}/${y2}`;
+        }
+
         function updatePreview() {
             const assunto = document.getElementById('select-assunto').value;
             const preview = document.getElementById('preview-content');
@@ -480,10 +491,28 @@
             const calc_orig = calculateDays(ini_orig, fim_orig);
             if (calc_orig !== null) document.getElementById('input-dias-orig').value = calc_orig;
 
+            // Interruption Math (Saldo)
+            const retorno = document.getElementById('input-retorno').value;
+            if ((assunto === 'ferias_pos_inicio' || assunto === 'ferias_necessidade') && calc_orig !== null && /^\d{2}\/\d{2}\/\d{4}$/.test(retorno)) {
+                const enjoyed = calculateDays(ini_orig, retorno) - 1;
+                const remaining = calc_orig - enjoyed;
+                if (remaining > 0) {
+                    document.getElementById('input-dias-novos').value = remaining;
+                }
+            }
+
             const ini_nova = document.getElementById('input-data-ini-nova').value;
+            const dias_novos = document.getElementById('input-dias-novos').value;
+
+            // Auto-calculate new end date
+            if (ini_nova && dias_novos) {
+                const calc_fim_nova = calculateEndDate(ini_nova, dias_novos);
+                if (calc_fim_nova) document.getElementById('input-data-fim-nova').value = calc_fim_nova;
+            }
+
             const fim_nova = document.getElementById('input-data-fim-nova').value;
             const calc_nova = calculateDays(ini_nova, fim_nova);
-            if (calc_nova !== null) document.getElementById('input-dias-novos').value = calc_nova;
+            if (calc_nova !== null && !dias_novos) document.getElementById('input-dias-novos').value = calc_nova;
 
             const data = {
                 setor: document.getElementById('input-setor').value || "[SETOR]",
