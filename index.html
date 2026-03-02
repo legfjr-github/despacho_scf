@@ -309,6 +309,15 @@
                             oninput="updatePreview()">
                     </div>
 
+                    <div id="group-retorno" class="form-group dynamic-field"
+                        style="background: #fffde7; padding: 10px; border-radius: 4px; border: 1px solid #ffd54f;">
+                        <label for="input-retorno">Data do Retorno (Interrupção):</label>
+                        <input type="text" id="input-retorno" placeholder="DDMMYYYY" maxlength="10"
+                            oninput="maskDate(this); updatePreview()">
+                        <small style="color: #856404; font-size: 0.75rem;">Preencha primeiro para calcular o saldo
+                            abaixo.</small>
+                    </div>
+
                     <div id="group-datas-novas" class="form-group dynamic-field">
                         <label>Nova Programação / Saldo:</label>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -319,12 +328,6 @@
                         </div>
                         <input type="number" id="input-dias-novos" placeholder="Nº de dias" style="margin-top:5px"
                             oninput="updatePreview()">
-                    </div>
-
-                    <div id="group-retorno" class="form-group dynamic-field">
-                        <label for="input-retorno">Data do Retorno (Interrupção):</label>
-                        <input type="text" id="input-retorno" placeholder="DDMMYYYY" maxlength="10"
-                            oninput="maskDate(this); updatePreview()">
                     </div>
 
                     <div id="group-motivo" class="form-group dynamic-field">
